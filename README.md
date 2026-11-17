@@ -1,2 +1,2 @@
-# extendent-coordination-test
-extendent coordination test app
+# extended-coordination-test
+extended coordination test app
