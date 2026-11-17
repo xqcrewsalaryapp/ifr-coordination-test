@@ -182,6 +182,58 @@ button{font:inherit;color:inherit}
 .deviation-row input[type=range]{width:100%;accent-color:var(--cyan);margin:0}
 .deviation-row.disabled{opacity:.35}
 .settings-note{font-size:9px;line-height:1.45;color:var(--muted);margin-top:9px}
+
+/* Separate setup, simulator and results screens */
+html,body{height:100%;min-height:100%;overflow:hidden}
+body{padding:0}
+.screen{display:none;width:100%;height:100dvh;min-height:0;overflow:hidden}
+.screen.active{display:block}
+.setup-screen{overflow-y:auto;padding:18px 12px;overscroll-behavior:contain}
+.setup-content{min-height:100%;display:flex;align-items:center;justify-content:center}
+.setup-content .level-select-card{max-height:none;overflow:visible}
+.game-screen{padding:6px 8px;touch-action:pan-x pan-y}
+.game-screen .app{height:100%;max-width:760px;display:flex;flex-direction:column;gap:5px;margin:0 auto;overflow:hidden}
+.game-screen .topbar{flex:0 0 auto;margin:0}
+.game-screen .panel{flex:0 0 auto;margin:0;padding:6px}
+.game-screen .target{padding:6px 2px}
+.game-screen .target small{font-size:8px;margin-bottom:3px}
+.game-screen .target strong{font-size:14px}
+.game-screen .task-line{margin-top:4px;font-size:9px}
+.game-screen .main-grid{flex:1 1 auto;min-height:0;grid-template-columns:58px minmax(0,1fr) 58px;gap:5px}
+.game-screen .main-grid>div:nth-child(2){display:flex;flex-direction:column;min-height:0}
+.game-screen .main-grid>div:nth-child(2)>.pfd{flex:1 1 auto}
+.game-screen .main-grid>div:nth-child(2)>.slip-panel{flex:0 0 auto}
+.game-screen .side-panel{min-height:0;padding:5px 2px}
+.game-screen .tape{height:100%;min-height:70px}
+.game-screen .pfd{height:100%;min-height:0;aspect-ratio:auto}
+.game-screen .slip-panel{margin-top:5px;padding:5px}
+.game-screen .slip-track{height:26px}
+.game-screen .rudder-row{margin-top:4px;gap:7px}
+.game-screen .rudder-btn{padding:6px;min-width:75px;font-size:10px}
+.game-screen .controls-row{flex:0 0 clamp(132px,22dvh,185px);margin:0;gap:6px;min-height:0}
+.game-screen .control-card,.game-screen .throttle-panel{padding:6px}
+.game-screen .throttle-head{margin-bottom:3px}
+.game-screen .throttle-control{height:calc(100% - 34px);min-height:70px}
+.game-screen .throttle-track,.game-screen .throttle-scale{height:100%;max-height:130px}
+.game-screen .throttle-note{margin-top:3px;font-size:7px}
+.game-screen .joystick-zone{height:calc(100% - 36px);min-height:75px}
+.game-screen .joy-ring{width:min(84px,70%);height:min(84px,70%)}
+.game-screen .joy-labels{margin-top:3px}
+.game-screen .control-area,.game-screen .action-row,.game-screen #results{display:none!important}
+.results-screen{overflow-y:auto;padding:18px 12px;overscroll-behavior:contain}
+.results-page{width:100%;max-width:620px;margin:0 auto;padding-bottom:20px}
+.results-screen .results{display:block!important;margin:0}
+.result-actions{margin-top:14px}
+@media(max-height:700px){
+ .game-screen{padding:4px 6px}
+ .game-screen .controls-row{flex-basis:clamp(112px,20dvh,145px)}
+ .game-screen .target{padding:4px 2px}
+ .game-screen .side-label{font-size:8px}
+ .game-screen .slip-panel{padding:3px}
+ .game-screen .slip-title{margin-bottom:3px}
+}
+@media(max-width:370px){.game-screen .main-grid{grid-template-columns:52px minmax(0,1fr) 52px;gap:4px}.game-screen .controls-row{gap:4px}.game-screen .rudder-btn{min-width:65px}}
+
 </style>
 <link rel="manifest" href="./manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -190,6 +242,38 @@ button{font:inherit;color:inherit}
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 </head>
 <body>
+<section class="screen setup-screen active" id="setupScreen">
+<div class="setup-content" id="intro">
+ <div class="overlay-card level-select-card">
+  <div class="menu-kicker">TRAINING SIMULATOR</div>
+  <h1>Extended Coordination Test</h1>
+  <p class="menu-intro">Choose which flight parameters to include and set the initial target deviation for each one.</p>
+  <div class="settings-panel">
+   <div class="settings-title">ACTIVE PARAMETERS</div>
+   <div class="param-select">
+    <label class="param-option"><input type="checkbox" id="useAltitude" checked> ALTITUDE</label>
+    <label class="param-option"><input type="checkbox" id="useHeading" checked> HEADING</label>
+    <label class="param-option"><input type="checkbox" id="useSpeed"> AIRSPEED</label>
+    <label class="param-option"><input type="checkbox" id="useSlip"> SLIP BALL</label>
+   </div>
+   <div class="deviation-list">
+    <div class="deviation-row" id="altitudeDeviationRow"><div class="deviation-head"><span>ALTITUDE DEVIATION</span><strong id="altitudeDeviationValue">±1,000 ft</strong></div><input id="altitudeDeviation" type="range" min="200" max="2500" step="100" value="1000"></div>
+    <div class="deviation-row" id="headingDeviationRow"><div class="deviation-head"><span>HEADING DEVIATION</span><strong id="headingDeviationValue">±20°</strong></div><input id="headingDeviation" type="range" min="5" max="60" step="1" value="20"></div>
+    <div class="deviation-row" id="speedDeviationRow"><div class="deviation-head"><span>AIRSPEED DEVIATION</span><strong id="speedDeviationValue">±20 kt</strong></div><input id="speedDeviation" type="range" min="5" max="50" step="1" value="20"></div>
+    <div class="deviation-row" id="slipDeviationRow"><div class="deviation-head"><span>SLIP BALL INITIAL DEVIATION</span><strong id="slipDeviationValue">±65%</strong></div><input id="slipDeviation" type="range" min="51" max="95" step="1" value="65"></div>
+   </div>
+   <div class="settings-note">Each selected parameter receives its own randomly generated target within the selected deviation. Slip Ball deviation controls the initial ball offset for each slip task.</div>
+  </div>
+  <div class="deviation-row" style="margin-top:10px">
+   <div class="deviation-head"><span>TEST DURATION</span><strong id="durationValue">2:00 min</strong></div>
+   <input id="durationSlider" type="range" min="60" max="600" step="30" value="120" style="width:100%;accent-color:var(--cyan);margin:0">
+   <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:9px;margin-top:4px"><span>1 min</span><span>10 min</span></div>
+  </div>
+  <button id="introStart">START TEST</button>
+ </div>
+</div>
+</section>
+<section class="screen game-screen" id="gameScreen">
 <div class="app">
  <div class="topbar">
   <div><div class="brand">EXTENDED COORDINATION</div><div class="status" id="status">READY · TRAINING MODE</div></div>
@@ -269,6 +353,12 @@ button{font:inherit;color:inherit}
   </div>
  </div>
  <div class="action-row"><button class="primary" id="startBtn">START TEST</button><button class="secondary" id="resetBtn">RESET</button></div>
+
+
+</div>
+</section>
+<section class="screen results-screen" id="resultsScreen">
+<div class="results-page">
  <div class="results" id="results">
   <h2>TEST RESULTS</h2>
   <div class="score-row"><span>Airspeed control</span><strong id="scoreSpeed">N/A</strong></div>
@@ -289,37 +379,12 @@ button{font:inherit;color:inherit}
   </div>
   <div class="control-heading" style="margin-top:14px">RECENT TEST HISTORY</div>
   <div class="history-list" id="historyList"></div>
- </div>
+ 
+  <div class="action-row result-actions"><button class="primary" id="resultAgain">NEW TEST</button><button class="secondary" id="resultSettings">CHANGE SETTINGS</button></div>
 </div>
-<div class="overlay" id="intro">
- <div class="overlay-card level-select-card">
-  <div class="menu-kicker">TRAINING SIMULATOR</div>
-  <h1>Extended Coordination Test</h1>
-  <p class="menu-intro">Choose which flight parameters to include and set the initial target deviation for each one.</p>
-  <div class="settings-panel">
-   <div class="settings-title">ACTIVE PARAMETERS</div>
-   <div class="param-select">
-    <label class="param-option"><input type="checkbox" id="useAltitude" checked> ALTITUDE</label>
-    <label class="param-option"><input type="checkbox" id="useHeading" checked> HEADING</label>
-    <label class="param-option"><input type="checkbox" id="useSpeed"> AIRSPEED</label>
-    <label class="param-option"><input type="checkbox" id="useSlip"> SLIP BALL</label>
-   </div>
-   <div class="deviation-list">
-    <div class="deviation-row" id="altitudeDeviationRow"><div class="deviation-head"><span>ALTITUDE DEVIATION</span><strong id="altitudeDeviationValue">±1,000 ft</strong></div><input id="altitudeDeviation" type="range" min="200" max="2500" step="100" value="1000"></div>
-    <div class="deviation-row" id="headingDeviationRow"><div class="deviation-head"><span>HEADING DEVIATION</span><strong id="headingDeviationValue">±20°</strong></div><input id="headingDeviation" type="range" min="5" max="60" step="1" value="20"></div>
-    <div class="deviation-row" id="speedDeviationRow"><div class="deviation-head"><span>AIRSPEED DEVIATION</span><strong id="speedDeviationValue">±20 kt</strong></div><input id="speedDeviation" type="range" min="5" max="50" step="1" value="20"></div>
-    <div class="deviation-row" id="slipDeviationRow"><div class="deviation-head"><span>SLIP BALL INITIAL DEVIATION</span><strong id="slipDeviationValue">±65%</strong></div><input id="slipDeviation" type="range" min="51" max="95" step="1" value="65"></div>
-   </div>
-   <div class="settings-note">Each selected parameter receives its own randomly generated target within the selected deviation. Slip Ball deviation controls the initial ball offset for each slip task.</div>
-  </div>
-  <div class="deviation-row" style="margin-top:10px">
-   <div class="deviation-head"><span>TEST DURATION</span><strong id="durationValue">2:00 min</strong></div>
-   <input id="durationSlider" type="range" min="60" max="600" step="30" value="120" style="width:100%;accent-color:var(--cyan);margin:0">
-   <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:9px;margin-top:4px"><span>1 min</span><span>10 min</span></div>
-  </div>
-  <button id="introStart">START TEST</button>
- </div>
 </div>
+</section>
+
 
 <script>
 (()=>{
@@ -801,11 +866,8 @@ function finish(){
  $('oscillationResult').textContent=S.metrics.oscillations;
 
  saveHistory(finalValue);drawPerformanceChart();
- $('results').style.display='block';
  $('status').textContent='TEST COMPLETED';
- $('startBtn').textContent='TEST AGAIN';
- $('startBtn').disabled=false;
- $('results').scrollIntoView({behavior:'smooth',block:'nearest'});
+ showScreen('resultsScreen');
 }
 
 function loop(t){
@@ -824,14 +886,18 @@ function loop(t){
  raf=requestAnimationFrame(loop);
 }
 
+function showScreen(id){
+ document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+ $(id).classList.add('active');
+}
+
 function start(){
  if(S.running)return;
  if(!Object.values(S.selected).some(Boolean)){
   alert('Select at least one parameter.');return;
  }
  updateSettingsUI();
- $('intro').classList.add('hidden');
- $('results').style.display='none';
+ showScreen('gameScreen');
  S.running=true;S.remaining=S.duration;S.elapsed=0;
  S.lastTime=performance.now();S.sampleClock=0;
  S.samples=[];S.chartSamples=[];
@@ -859,7 +925,6 @@ function reset(){
   taskTrack:null,previousErrors:null,stableClock:0,wasStable:false,chartSamples:[]
  });
  setJoy(0,0);updateThrottleDisplay();
- $('results').style.display='none';
  $('startBtn').disabled=false;$('startBtn').textContent='START TEST';
  $('status').textContent='READY · TRAINING MODE';
  newTask(true);newSlipEvent();updateSettingsUI();timer();render();
@@ -868,8 +933,10 @@ function reset(){
 $('startBtn').addEventListener('click',start);
 $('introStart').addEventListener('click',start);
 $('resetBtn').addEventListener('click',()=>{
- reset();$('intro').classList.remove('hidden');
+ reset();showScreen('setupScreen');
 });
+$('resultAgain').addEventListener('click',()=>{reset();start()});
+$('resultSettings').addEventListener('click',()=>{reset();showScreen('setupScreen')});
 window.addEventListener('resize',render);
 
 updateThrottleDisplay();updateSettingsUI();
