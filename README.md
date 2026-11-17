@@ -1,2 +1,2 @@
-# extended-coordination-test
-extended coordination test app
+# IFR Coordination Test
+IFR Coordination Test simulator
